@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Taski - Login</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            width: 100%;
+            height: 100%;
+            font-family: Arial;
+        }
+
+        form {
+            width: 300px;
+            margin: 200px auto;
+            text-align: center;
+        }
+
+        input {
+            display: block;
+            margin: 0 auto 10px auto;
+            width: 250px;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<form method="POST" action="login.php">
+    <h3>Login</h3>
+    <input type="text" name="usuario" placeholder="Usuário" required>
+    <input type="password" name="senha" placeholder="Senha" required>
+    <input type="submit" value="Entrar">
+</form>
+
+<a href="cadastro.php">Criar conta</a>
+
+</body>
+</html>
