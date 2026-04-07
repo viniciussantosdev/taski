@@ -38,5 +38,17 @@
 
 <a href="cadastro.php">Criar conta</a>
 
+<form method="POST" action="cadastro.php">
+    Nome:<br>
+    <input type="text" name="nome" required><br><br>
+
+    Email:<br>
+    <input type="text" name="email" required><br><br>
+
+    Senha:<br>
+    <input type="password" name="senha" required><br><br>
+    <button type= "submit">Cadastrar</button>
+</form>
+
 </body>
 </html>
