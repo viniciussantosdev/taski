@@ -2,6 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['usuario'])) { //verifica login
+if (!isset($_SESSION['usuario'])) { //verifica login
     header("Location: index.php");
     exit();
 }
@@ -51,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
 ?>
 
 <!DOCTYPE html>
+<html>
 <html>
 <head>
     <meta charset="UTF-8">
