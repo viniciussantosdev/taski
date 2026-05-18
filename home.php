@@ -1,32 +1,32 @@
+```php
 <?php
 session_start();
 
-if (!isset($_SESSION['usuario'])) { //verifica login
-if (!isset($_SESSION['usuario'])) { //verifica login
+if (!isset($_SESSION['usuario'])) { // verifica login
     header("Location: index.php");
     exit();
 }
 
 
 $conn = new mysqli("localhost", "root", "", "sistema_usuarios"); //coon: conecta com o banco de dados
+$conn = new mysqli("localhost", "root", "", "sistema_usuarios"); // conecta com o banco de dados
 
 if ($conn->connect_error) {
     die("Erro de conexão: " . $conn->connect_error);
 }
 
-
-if (isset($_GET['excluir'])) { //função excluir tarefa
+if (isset($_GET['excluir'])) { // função excluir tarefa
 
     $id = $_GET['excluir'];
 
-    $stmt = $conn->prepare("DELETE FROM tarefas WHERE id = ?"); //deleta da tabela
+    $stmt = $conn->prepare("DELETE FROM tarefas WHERE id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
 
     $stmt->close();
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
+if ($_SERVER["REQUEST_METHOD"] == "POST") { // cadastro de tarefas
 
     $titulo = $_POST['titulo'];
     $descricao = $_POST['descricao'];
@@ -37,27 +37,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
         VALUES (?, ?, 'pendente', ?)
     ");
 
+    // ss = string string | i = integer
     $stmt->bind_param("ssi", $titulo, $descricao, $usuario_id);
 
     if ($stmt->execute()) {
-        echo "Tarefa cadastrada com sucesso!<br><br>";
+        $mensagem = "Tarefa cadastrada com sucesso!";
     } else {
-        echo "Erro: " . $stmt->error;
+        $mensagem = "Erro: " . $stmt->error;
     }
 
     $stmt->close();
 }
-
-
 ?>
 
 <!DOCTYPE html>
-<html>
-<html>
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Tarefas</title>
     <link rel="shortcut icon" href="img/favicon-16x16.png" type="image/x-icon">
+
     <style>
         * {
             box-sizing: border-box;
@@ -222,7 +222,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
         .section-divider {
             height: 1px;
             margin: 28px 0 22px;
-            background: linear-gradient(90deg, rgba(74, 44, 165, 0.12), rgba(74, 44, 165, 0.32), rgba(74, 44, 165, 0.12));
+            background: linear-gradient(
+                90deg,
+                rgba(74, 44, 165, 0.12),
+                rgba(74, 44, 165, 0.32),
+                rgba(74, 44, 165, 0.12)
+            );
         }
 
         .tasks-section {
@@ -312,7 +317,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
         }
     </style>
 </head>
+
 <body>
+
 <header>
     <div class="brand-box">
         <img src="img/logo-taski-png.png" alt="Taski">
@@ -320,27 +327,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
 </header>
 
 <main class="page">
+
     <section class="hero">
         <div>
             <h2>Bem-vindo!</h2>
+
             <p>
-                Bem-vindo à Taski! Aqui você organiza suas tarefas e acompanha seu progresso de um jeito simples.
+                Bem-vindo à Taski! Aqui você organiza suas tarefas
+                e acompanha seu progresso de um jeito simples.
             </p>
         </div>
-        <a class="logout-link" href="logout.php">Sair</a>
+
+        <a class="logout-link" href="logout.php">
+            Sair
+        </a>
     </section>
 
     <section class="panel">
+
         <div>
             <h3>Cadastrar Tarefa</h3>
 
             <?php if (!empty($mensagem)) { ?>
-                <div class="status-message"><?php echo $mensagem; ?></div>
+                <div class="status-message">
+                    <?php echo $mensagem; ?>
+                </div>
             <?php } ?>
 
             <form method="POST">
+
                 <div class="field">
                     <label for="titulo">Título</label>
+
                     <input
                         id="titulo"
                         type="text"
@@ -352,6 +370,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
 
                 <div class="field">
                     <label for="descricao">Descrição</label>
+
                     <textarea
                         id="descricao"
                         name="descricao"
@@ -363,32 +382,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
                 <button class="btn" type="submit">
                     Cadastrar
                 </button>
+
             </form>
         </div>
 
         <div class="section-divider"></div>
 
         <div class="tasks-section">
+
             <h3>Lista de Tarefas</h3>
 
 <?php
 
 if (isset($_GET['status']) && isset($_GET['id'])) {
+
     $id = $_GET['id'];
-    $novoStatus = $_GET['status']; // status da tarefa
+    $novoStatus = $_GET['status'];
 
     $stmt = $conn->prepare("
         UPDATE tarefas
         SET status = ?
-        WHERE id = ? 
+        WHERE id = ?
     ");
 
     $stmt->bind_param("si", $novoStatus, $id);
-    $stmt->execute(); // executa o status da tarefa
+    $stmt->execute();
     $stmt->close();
 }
 
 if (isset($_GET['excluir'])) {
+
     $id = $_GET['excluir'];
 
     $stmt = $conn->prepare("
@@ -397,62 +420,90 @@ if (isset($_GET['excluir'])) {
     ");
 
     $stmt->bind_param("i", $id);
-    $stmt->execute(); // exclui a tarefa
+    $stmt->execute();
     $stmt->close();
 }
 
 $sql = "SELECT * FROM tarefas ORDER BY id DESC";
+
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) { // lista de tarefas
+
+    while ($row = $result->fetch_assoc()) {
+
         echo "<div class='task-card'>";
+
         echo "<div class='task-top'>";
+
         echo "<h4 class='task-title'>" . $row['titulo'] . "</h4>";
 
-        if ($row['status'] == 'pendente') { // mostra na tela um botão de pendente
+        if ($row['status'] == 'pendente') {
+
             echo "
-            <a href='?id=" . $row['id'] . "&status=concluido' class='status-link status-pendente'>
+            <a href='?id=" . $row['id'] . "&status=concluido'
+               class='status-link status-pendente'>
                Pendente
             </a>
             ";
-        } else { // se clicar em \"pendente\", fica em concluído
+
+        } else {
+
             echo "
-            <a href='?id=" . $row['id'] . "&status=pendente' class='status-link status-concluido'>
+            <a href='?id=" . $row['id'] . "&status=pendente'
+               class='status-link status-concluido'>
                Concluído
             </a>
             ";
         }
 
         echo "</div>";
-        echo "<p class='task-description'>" . $row['descricao'] . "</p>"; // mostra a descrição da tabela
+
+        echo "
+        <p class='task-description'>
+            " . $row['descricao'] . "
+        </p>
+        ";
 
         echo "
         <div class='task-actions'>
-            <a class='action-link action-edit' href='editar_tarefa.php?id=" . $row['id'] . "'>
-               Editar
+
+            <a
+                class='action-link action-edit'
+                href='editar_tarefa.php?id=" . $row['id'] . "'>
+                Editar
             </a>
 
-            <a class='action-link action-delete' href='?excluir=" . $row['id'] . "' 
-               onclick=\"return confirm('Deseja excluir?')\">
-               Excluir
+            <a
+                class='action-link action-delete'
+                href='?excluir=" . $row['id'] . "'
+                onclick=\"return confirm('Deseja excluir?')\">
+                Excluir
             </a>
-        </div>";
+
+        </div>
+        ";
 
         echo "</div>";
     }
+
 } else {
-    echo "<div class='empty-state'>Nenhuma tarefa cadastrada.</div>";
+
+    echo "
+    <div class='empty-state'>
+        Nenhuma tarefa cadastrada.
+    </div>
+    ";
 }
 
 $conn->close();
 
 ?>
+
         </div>
     </section>
 </main>
 
 </body>
 </html>
-</body>
-</html>
+```
