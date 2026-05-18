@@ -7,8 +7,6 @@ if (!isset($_SESSION['usuario'])) { // verifica login
     exit();
 }
 
-
-$conn = new mysqli("localhost", "root", "", "sistema_usuarios"); //coon: conecta com o banco de dados
 $conn = new mysqli("localhost", "root", "", "sistema_usuarios"); // conecta com o banco de dados
 
 if ($conn->connect_error) {
