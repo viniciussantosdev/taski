@@ -29,13 +29,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
 
     $titulo = $_POST['titulo'];
     $descricao = $_POST['descricao'];
+    $usuario_id = $_SESSION['id'];
 
     $stmt = $conn->prepare("
-        INSERT INTO tarefas (titulo, descricao, status)
-        VALUES (?, ?, 'pendente')
+        INSERT INTO tarefas (titulo, descricao, status, usuario_id)
+        VALUES (?, ?, 'pendente', ?)
     ");
 
-    $stmt->bind_param("ss", $titulo, $descricao);
+    $stmt->bind_param("ssi", $titulo, $descricao, $usuario_id);
 
     if ($stmt->execute()) {
         echo "Tarefa cadastrada com sucesso!<br><br>";
@@ -52,53 +53,325 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") { //cadastro de tarefas
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Sistema de Tarefas</title>
+    <link rel="shortcut icon" href="img/favicon-16x16.png" type="image/x-icon">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #4a2ca5;
+            color: #1f1735;
+        }
+
+        header {
+            width: 100%;
+            min-height: 70px;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #4a00e0, #8e2de2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(34, 12, 85, 0.2);
+        }
+
+        .brand-box {
+            padding: 10px 24px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            box-shadow: 0 12px 28px rgba(32, 12, 76, 0.18);
+        }
+
+        header img {
+            height: 68px;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .page {
+            width: min(1100px, calc(100% - 32px));
+            margin: 30px auto;
+            display: grid;
+            gap: 24px;
+        }
+
+        .hero,
+        .panel,
+        .task-card,
+        .empty-state {
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(18, 8, 44, 0.22);
+        }
+
+        .hero {
+            padding: 28px;
+            background: linear-gradient(135deg, #0f8b8d, #5b3c88);
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .hero h2 {
+            margin: 0 0 10px;
+            font-size: 30px;
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 680px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+        }
+
+        .logout-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        .logout-link:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .panel {
+            padding: 24px;
+            background: #ffffff;
+        }
+
+        .panel h3,
+        .tasks-section h3 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            color: #34215f;
+            font-size: 24px;
+        }
+
+        .status-message {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #eef7ff;
+            color: #274d72;
+            font-size: 14px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            color: #55457d;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .field input,
+        .field textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d6d2e5;
+            border-radius: 16px;
+            background: #f7f6fb;
+            color: #1f1735;
+            font-size: 14px;
+        }
+
+        .field textarea {
+            min-height: 130px;
+            resize: vertical;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 16px;
+            background-color: #4a90c2;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #3b7aa3;
+            transform: translateY(-1px);
+        }
+
+        .section-divider {
+            height: 1px;
+            margin: 28px 0 22px;
+            background: linear-gradient(90deg, rgba(74, 44, 165, 0.12), rgba(74, 44, 165, 0.32), rgba(74, 44, 165, 0.12));
+        }
+
+        .tasks-section {
+            display: grid;
+            gap: 16px;
+        }
+
+        .task-card {
+            padding: 20px;
+            background: #ffffff;
+        }
+
+        .task-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .task-title {
+            margin: 0;
+            color: #34215f;
+            font-size: 21px;
+        }
+
+        .task-description {
+            margin: 0;
+            color: #55457d;
+            line-height: 1.55;
+        }
+
+        .status-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 128px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .status-pendente {
+            background: #fff4d6;
+            color: #aa6b00;
+        }
+
+        .status-concluido {
+            background: #dcf7e5;
+            color: #14703d;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .action-link {
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .action-edit {
+            color: #366bb3;
+        }
+
+        .action-delete {
+            color: #c23852;
+        }
+
+        .empty-state {
+            padding: 28px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #55457d;
+            text-align: center;
+        }
+
+        @media (max-width: 860px) {
+            .hero h2 {
+                font-size: 26px;
+            }
+        }
+    </style>
 </head>
 <body>
-<h2>Bem vindo! </h2>
+<header>
+    <div class="brand-box">
+        <img src="img/logo-taski-png.png" alt="Taski">
+    </div>
+</header>
 
-<p>
-Bem-vindo à Taski! Aqui você organiza suas tarefas e aumenta sua produtividade 🚀
-</p>
+<main class="page">
+    <section class="hero">
+        <div>
+            <h2>Bem-vindo!</h2>
+            <p>
+                Bem-vindo à Taski! Aqui você organiza suas tarefas e acompanha seu progresso de um jeito simples.
+            </p>
+        </div>
+        <a class="logout-link" href="logout.php">Sair</a>
+    </section>
 
-<a href="logout.php">Sair</a>
+    <section class="panel">
+        <div>
+            <h3>Cadastrar Tarefa</h3>
 
-<hr>
+            <?php if (!empty($mensagem)) { ?>
+                <div class="status-message"><?php echo $mensagem; ?></div>
+            <?php } ?>
 
-<h2>Cadastrar Tarefa</h2>
+            <form method="POST">
+                <div class="field">
+                    <label for="titulo">Título</label>
+                    <input
+                        id="titulo"
+                        type="text"
+                        name="titulo"
+                        placeholder="Digite o título da tarefa"
+                        required
+                    >
+                </div>
 
-<form method="POST">
+                <div class="field">
+                    <label for="descricao">Descrição</label>
+                    <textarea
+                        id="descricao"
+                        name="descricao"
+                        placeholder="Descreva a tarefa"
+                        required
+                    ></textarea>
+                </div>
 
-    <input
-        type="text"
-        name="titulo"
-        placeholder="Título"
-        required
-    >
-    <br><br>
+                <button class="btn" type="submit">
+                    Cadastrar
+                </button>
+            </form>
+        </div>
 
-    <textarea
-        name="descricao"
-        placeholder="Descrição"
-        required
-    ></textarea>
+        <div class="section-divider"></div>
 
-    <br><br>
-
-    <button type="submit">
-        Cadastrar
-    </button>
-
-</form>
-
-<hr>
-
-<h2>Lista de Tarefas</h2>
+        <div class="tasks-section">
+            <h3>Lista de Tarefas</h3>
 
 <?php
 
 if (isset($_GET['status']) && isset($_GET['id'])) {
-
     $id = $_GET['id'];
     $novoStatus = $_GET['status']; // status da tarefa
 
@@ -109,14 +382,11 @@ if (isset($_GET['status']) && isset($_GET['id'])) {
     ");
 
     $stmt->bind_param("si", $novoStatus, $id);
-    $stmt->execute(); //executa o status da tarefa
-
+    $stmt->execute(); // executa o status da tarefa
     $stmt->close();
 }
 
-
 if (isset($_GET['excluir'])) {
-
     $id = $_GET['excluir'];
 
     $stmt = $conn->prepare("
@@ -125,92 +395,62 @@ if (isset($_GET['excluir'])) {
     ");
 
     $stmt->bind_param("i", $id);
-    $stmt->execute(); //mesma coisa que status porém, exclui a tarefa
-
+    $stmt->execute(); // exclui a tarefa
     $stmt->close();
 }
 
 $sql = "SELECT * FROM tarefas ORDER BY id DESC";
-
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) { // lista de tarefas
+        echo "<div class='task-card'>";
+        echo "<div class='task-top'>";
+        echo "<h4 class='task-title'>" . $row['titulo'] . "</h4>";
 
-    while($row = $result->fetch_assoc()) { //lista de tarefas
-
-        echo "<div style='
-            border:1px solid #ccc;
-            padding:15px;
-            margin-bottom:10px;
-            border-radius:10px;
-        '>";
-
-
-        if ($row['status'] == 'pendente') { //mostra na tela um botão de pendente
-
+        if ($row['status'] == 'pendente') { // mostra na tela um botão de pendente
             echo "
-            <a href='?id=".$row['id']."&status=concluido'
-               style='
-                    text-decoration:none;
-                    color:orange;
-                    font-weight:bold;
-               '>
-               🟡 Pendente
+            <a href='?id=" . $row['id'] . "&status=concluido' class='status-link status-pendente'>
+               Pendente
             </a>
             ";
-
-        } else { //se clicar em "pendente, fica em concluido"
-
+        } else { // se clicar em \"pendente\", fica em concluído
             echo "
-            <a href='?id=".$row['id']."&status=pendente'
-               style='
-                    text-decoration:none;
-                    color:green;
-                    font-weight:bold;
-               '>
-               🟢 Concluído
+            <a href='?id=" . $row['id'] . "&status=pendente' class='status-link status-concluido'>
+               Concluído
             </a>
             ";
         }
 
-        echo "<h3>" . $row['titulo'] . "</h3>"; //pega do banco de dados o título da tarefa
-
-        echo "<p>" . $row['descricao'] . "</p>"; //mostra a descrição da tabela
-
+        echo "</div>";
+        echo "<p class='task-description'>" . $row['descricao'] . "</p>"; // mostra a descrição da tabela
 
         echo "
-        <br><br>
+        <div class='task-actions'>
+            <a class='action-link action-edit' href='editar_tarefa.php?id=" . $row['id'] . "'>
+               Editar
+            </a>
 
-<a href='editar_tarefa.php?id=".$row['id']."'
-   style='
-        color:blue;
-        margin-right:10px;
-        text-decoration:none;
-   '>
-   Editar
-</a>
+            <a class='action-link action-delete' href='?excluir=" . $row['id'] . "' 
+               onclick=\"return confirm('Deseja excluir?')\">
+               Excluir
+            </a>
+        </div>";
 
-<a href='?excluir=".$row['id']."' 
-   onclick=\"return confirm('Deseja excluir?')\"
-   style='
-        color:red;
-        text-decoration:none;
-   '>
-   Excluir
-</a>";
+        echo "</div>";
     }
-
 } else {
-
-    echo "Nenhuma tarefa cadastrada.";
-
+    echo "<div class='empty-state'>Nenhuma tarefa cadastrada.</div>";
 }
 
 $conn->close();
 
-
 ?>
+        </div>
+    </section>
+</main>
 
-
+</body>
+</html>
 </body>
 </html>

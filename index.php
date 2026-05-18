@@ -86,17 +86,6 @@
             background-color: #3b7aa3;
         }
 
-        .link {
-            display: block;
-            margin-top: 12px;
-            color: #fff;
-            font-size: 13px;
-            text-decoration: none;
-        }
-
-        .link:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -121,10 +110,7 @@
             </div>
 
             <input class="btn" type="submit" value="Login">
-        </form>
-
-        <a class="link" href="cadastro.php">Criar conta</a>
-    </div>
+    
 </div>
 
 </body>
